@@ -25,14 +25,14 @@ class CustomStreamProvider implements OnlineStreamProvider {
         }));
     }
 
-    async findEpisodeServer(episodeId: string): Promise<AnimeProvider_Video[]> {
-        const response = await IndividualRequest.get(`http://100.89.97.87:8000/episode/${episodeId}/streams`);
+   async findEpisodes(animeId: string): Promise<AnimeProvider_Episode[]> {
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/episodes/${animeId}`);
         const data = response.json();
 
-        return data.map((stream: any) => ({
-            url: stream.url,
-            quality: stream.quality || "1080p",
-            type: stream.type || "sub",
+        return data.map((ep: any) => ({
+            id: ep.id.toString(),
+            number: ep.number,
+            title: ep.title,
+            url: ep.url,
         }));
     }
-}
