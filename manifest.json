@@ -3,7 +3,8 @@
   "name": "Custom Stream Provider",
   "version": "1.0.0",
   "type": "onlinestream-provider",
-  "author": "You",
+  "language": "typescript",
   "lang": "en",
-  "payload": "index.ts"
+  "author": "You",
+  "payloadURI": "https://raw.githubusercontent.com/tinman097/seanime-custom-provider/main/index.ts"
 }
