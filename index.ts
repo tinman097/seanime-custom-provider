@@ -1,80 +1,37 @@
-// Seanime Online Stream Provider for Custom API
-class Provider {
-    async search(query) {
-        const searchQuery = typeof query === 'object' ? (query.title || query.query || '') : query;
-        const res = await fetch(`http://100.89.97.87:8000/search?query=${encodeURIComponent(searchQuery)}`);
-        const data = await res.json();
-        const resultsArray = Array.isArray(data) ? data : (data.results || data.data || []);
+class CustomStreamProvider implements OnlineStreamProvider {
+    
+    async search(query: string): Promise<AnimeProvider_Anime[]> {
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/search?q=${encodeURIComponent(query)}`);
+        const data = response.json();
         
-        return resultsArray.map(item => {
-            let rawTitle = item.title || item.name || '';
-            let finalTitle = typeof rawTitle === 'object' && rawTitle !== null 
-                ? (rawTitle.romaji || rawTitle.english || rawTitle.userPreferred || Object.values(rawTitle)[0] || '') 
-                : String(rawTitle);
-
-            return { 
-                id: String(item.slug || item.id || ''), 
-                title: finalTitle, 
-                url: String(item.url || '') 
-            };
-        });
+        return data.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.title,
+            url: item.url,
+            image: item.image,
+        }));
     }
 
-    async findEpisodes(animeId) {
-        const rawId = String(animeId);
-        let queryStr = rawId === "21" ? "One Piece" : rawId;
+    async findEpisodes(animeId: string): Promise<AnimeProvider_Episode[]> {
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/anime/${animeId}/episodes`);
+        const data = response.json();
 
-        const searchRes = await fetch(`http://100.89.97.87:8000/search?query=${encodeURIComponent(queryStr)}`);
-        const searchData = await searchRes.json();
-        const resultsArray = Array.isArray(searchData) ? searchData : (searchData.results || searchData.data || []);
-        if (resultsArray.length === 0) return [];
-        
-        const bestMatch = resultsArray[0];
-        const providerShowId = bestMatch.slug || bestMatch.id || queryStr;
-
-        const res = await fetch(`http://100.89.97.87:8000/episodes/${providerShowId}`);
-        const data = await res.json();
-        const epsArray = Array.isArray(data) ? data : (data.episodes || data.data || []);
-        
-        return epsArray.map(ep => {
-            let rawEpTitle = ep.title || ep.name || '';
-            let finalEpTitle = typeof rawEpTitle === 'object' && rawEpTitle !== null 
-                ? (rawEpTitle.romaji || rawEpTitle.english || Object.values(rawEpTitle)[0] || '') 
-                : String(rawEpTitle);
-
-            return {
-                id: String(ep.id || ''),
-                number: Number(ep.number || 1),
-                title: finalEpTitle,
-                url: String(ep.url || '')
-            };
-        });
+        return data.map((ep: any) => ({
+            id: ep.id.toString(),
+            number: ep.number,
+            title: ep.title,
+            url: ep.url,
+        }));
     }
 
-    async findEpisodeServer(episodeUrl) {
-        // 1. Fetch server info from your Python API
-        const srvRes = await fetch(`http://100.89.97.87:8000/servers?url=${encodeURIComponent(episodeUrl)}`);
-        const srvData = await srvRes.json();
-        
-        const targetServerUrl = srvData.url || "http://100.89.97.87:8000/watch?url=dummy";
+    async findEpisodeServer(episodeId: string): Promise<AnimeProvider_Video[]> {
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/episode/${episodeId}/streams`);
+        const data = response.json();
 
-        // 2. Fetch the direct video stream from your Python watch endpoint
-        const watchRes = await fetch(`http://100.89.97.87:8000/watch?url=${encodeURIComponent(targetServerUrl)}`);
-        const watchData = await watchRes.json();
-
-        // 3. Return the fully resolved structure Seanime requires
-        return {
-            provider: "playground-extension",
-            server: srvData.name || "Main Server",
-            headers: null,
-            videoSources: [
-                {
-                    url: watchData.url || "",
-                    quality: "1080p",
-                    isM3U8: (watchData.url || "").includes(".m3u8")
-                }
-            ],
-            subtitles: watchData.subtitles || []
-        };
+        return data.map((stream: any) => ({
+            url: stream.url,
+            quality: stream.quality || "1080p",
+            type: stream.type || "sub",
+        }));
     }
 }
