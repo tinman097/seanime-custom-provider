@@ -13,7 +13,8 @@ class CustomStreamProvider implements OnlineStreamProvider {
     }
 
     async findEpisodes(animeId: string): Promise<AnimeProvider_Episode[]> {
-        const response = await IndividualRequest.get(`http://100.89.97.87:8000/anime/${animeId}/episodes`);
+        // Change this line from `/anime/${animeId}/episodes` to `/episodes/${animeId}`
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/episodes/${animeId}`);
         const data = response.json();
 
         return data.map((ep: any) => ({
