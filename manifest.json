@@ -4,5 +4,6 @@
   "version": "1.0.0",
   "type": "onlinestream-provider",
   "author": "You",
-  "lang": "en"
+  "lang": "en",
+  "payload": "index.ts"
 }
