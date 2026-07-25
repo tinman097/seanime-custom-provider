@@ -1,0 +1,1 @@
+# seanime-custom-provider
