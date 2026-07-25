@@ -24,8 +24,7 @@ class CustomStreamProvider implements OnlineStreamProvider {
         }));
     }
 
-    async findEpisodeServer(episodeId: any): Promise<AnimeProvider_Video[]> {
-        // Extract the string URL/ID properly if it's passed as an object
+   async findEpisodeServer(episodeId: any): Promise<AnimeProvider_Video[]> {
         const targetUrl = typeof episodeId === 'object' ? episodeId.url || episodeId.id || JSON.stringify(episodeId) : episodeId;
 
         const response = await IndividualRequest.get(`http://100.89.97.87:8000/servers?url=${encodeURIComponent(targetUrl)}`);
