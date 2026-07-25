@@ -6,5 +6,5 @@
   "language": "typescript",
   "lang": "en",
   "author": "You",
-  "payload": "export class CustomStreamProvider {}"
+  "payload": "https://github.com/tinman097/seanime-custom-provider/blob/main/index.ts"
 }
