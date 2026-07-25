@@ -13,7 +13,6 @@ class CustomStreamProvider implements OnlineStreamProvider {
     }
 
     async findEpisodes(animeId: string): Promise<AnimeProvider_Episode[]> {
-        // Change this line from `/anime/${animeId}/episodes` to `/episodes/${animeId}`
         const response = await IndividualRequest.get(`http://100.89.97.87:8000/episodes/${animeId}`);
         const data = response.json();
 
@@ -25,14 +24,15 @@ class CustomStreamProvider implements OnlineStreamProvider {
         }));
     }
 
-   async findEpisodes(animeId: string): Promise<AnimeProvider_Episode[]> {
-        const response = await IndividualRequest.get(`http://100.89.97.87:8000/episodes/${animeId}`);
+    async findEpisodeServer(episodeId: string): Promise<AnimeProvider_Video[]> {
+        // Pass the episode ID/URL to your backend's /servers route
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/servers?url=${encodeURIComponent(episodeId)}`);
         const data = response.json();
 
-        return data.map((ep: any) => ({
-            id: ep.id.toString(),
-            number: ep.number,
-            title: ep.title,
-            url: ep.url,
+        return data.map((stream: any) => ({
+            url: stream.url,
+            quality: stream.quality || "1080p",
+            type: stream.type || "sub",
         }));
     }
+}
