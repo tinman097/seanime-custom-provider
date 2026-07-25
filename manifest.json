@@ -6,5 +6,6 @@
   "language": "typescript",
   "lang": "en",
   "author": "You",
-  "payload": "https://github.com/tinman097/seanime-custom-provider/blob/main/index.ts"
+  "manifestURI": "https://raw.githubusercontent.com/tinman097/seanime-custom-provider/refs/heads/main/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/tinman097/seanime-custom-provider/refs/heads/main/index.ts"
 }
