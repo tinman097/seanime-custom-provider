@@ -24,9 +24,11 @@ class CustomStreamProvider implements OnlineStreamProvider {
         }));
     }
 
-    async findEpisodeServer(episodeId: string): Promise<AnimeProvider_Video[]> {
-        // Pass the episode ID/URL to your backend's /servers route
-        const response = await IndividualRequest.get(`http://100.89.97.87:8000/servers?url=${encodeURIComponent(episodeId)}`);
+    async findEpisodeServer(episodeId: any): Promise<AnimeProvider_Video[]> {
+        // Extract the string URL/ID properly if it's passed as an object
+        const targetUrl = typeof episodeId === 'object' ? episodeId.url || episodeId.id || JSON.stringify(episodeId) : episodeId;
+
+        const response = await IndividualRequest.get(`http://100.89.97.87:8000/servers?url=${encodeURIComponent(targetUrl)}`);
         const data = response.json();
 
         return data.map((stream: any) => ({
