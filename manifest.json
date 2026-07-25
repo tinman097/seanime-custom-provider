@@ -1,0 +1,8 @@
+{
+  "id": "custom-stream-provider",
+  "name": "Custom Stream Provider",
+  "version": "1.0.0",
+  "type": "onlinestream-provider",
+  "author": "You",
+  "lang": "en"
+}
