@@ -55,7 +55,9 @@ class Provider implements OnlineStreamProvider {
             return {
                 provider: "playground-extension",
                 server: "",
-                headers: {},
+                headers: {
+                    "Referer": "https://kwik.cx/"
+                },
                 videoSources: streams.map((stream: any) => ({
                     url: stream.url || "",
                     type: stream.type === "hls" ? "hls" : "",
