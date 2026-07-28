@@ -26,18 +26,20 @@ class Provider implements OnlineStreamProvider {
             const response = await fetch(`http://100.89.97.87:8000/episodes/${id}`);
             const data = await response.json();
             
-            const providerKey = Object.keys(data.providers || {})[0];
-            const episodesObj = data.providers?.[providerKey]?.episodes || data.episodes;
-            const items = episodesObj?.sub || episodesObj || data.results || data;
+            const items = data.results || data.episodes?.sub || data.episodes || data;
             
             if (!Array.isArray(items)) return [];
 
-            return items.map((ep: any) => ({
-                id: ep.id ? ep.id.toString() : "",
-                number: ep.number || 1,
-                title: ep.title || "",
-                url: ep.url || "",
-            }));
+            // Map each item ensuring unique numbers and IDs are correctly assigned
+            return items.map((ep: any, index: number) => {
+                const epNum = ep.number || index + 1;
+                return {
+                    id: ep.id ? ep.id.toString() : `${id}-ep-${epNum}`,
+                    number: epNum,
+                    title: ep.title || `Episode ${epNum}`,
+                    url: ep.url || "",
+                };
+            });
         } catch (err) {
             console.log("Episodes error:", err);
             return [];
