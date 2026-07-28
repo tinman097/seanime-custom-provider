@@ -19,6 +19,7 @@ class Provider implements OnlineStreamProvider {
             return [];
         }
     }
+
     async findEpisodes(animeId: any): Promise<AnimeProvider_Episode[]> {
         try {
             const id = typeof animeId === 'object' ? animeId.id || animeId.toString() : animeId;
@@ -44,27 +45,30 @@ class Provider implements OnlineStreamProvider {
             console.log("Episodes error:", err);
             return [];
         }
-    }}
+    }
 
     async findEpisodeServer(episodeId: any): Promise<any> {
         try {
             const epId = typeof episodeId === 'object' ? episodeId.id || JSON.stringify(episodeId) : episodeId;
-            const response = await fetch(`http://100.89.97.87:8000/sources?episodeId=${encodeURIComponent(epId)}&provider=miruro&category=sub`);
+            const anilistId = (typeof episodeId === 'object' && (episodeId.animeId || episodeId.anilistId)) || 182205;
+            
+            const url = `http://100.89.97.87:8000/sources?episodeId=${encodeURIComponent(epId)}&provider=miruro&anilistId=${anilistId}&category=sub`;
+            const response = await fetch(url);
             const data = await response.json();
 
-            const streams = data.streams || data.sources || [];
+            const streams = data.sources || data.streams || [];
             
             return {
                 provider: "playground-extension",
                 server: "",
-                headers: {
+                headers: data.headers || {
                     "Referer": "https://kwik.cx/"
                 },
                 videoSources: streams.map((stream: any) => ({
                     url: stream.url || "",
-                    type: stream.type === "hls" ? "hls" : "",
-                    quality: stream.quality || "default",
-                    subtitles: null
+                    type: stream.isM3U8 || stream.type === "hls" ? "hls" : "mp4",
+                    quality: stream.quality || "1080p",
+                    subtitles: stream.subtitles || []
                 }))
             };
         } catch (err) {
