@@ -46,11 +46,11 @@ class Provider implements OnlineStreamProvider {
 
     async findEpisodeServer(episodeId: any): Promise<any> {
         try {
-            const targetPath = typeof episodeId === 'object' ? episodeId.url || episodeId.id || JSON.stringify(episodeId) : episodeId;
-            const response = await fetch(`http://100.89.97.87:8000/${targetPath}`);
+            const epId = typeof episodeId === 'object' ? episodeId.id || JSON.stringify(episodeId) : episodeId;
+            const response = await fetch(`http://100.89.97.87:8000/sources?episodeId=${encodeURIComponent(epId)}&provider=miruro&category=sub`);
             const data = await response.json();
 
-            const streams = data.streams || [];
+            const streams = data.streams || data.sources || [];
             
             return {
                 provider: "playground-extension",
