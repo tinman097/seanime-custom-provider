@@ -19,20 +19,20 @@ class Provider implements OnlineStreamProvider {
             return [];
         }
     }
-
     async findEpisodes(animeId: any): Promise<AnimeProvider_Episode[]> {
         try {
             const id = typeof animeId === 'object' ? animeId.id || animeId.toString() : animeId;
             const response = await fetch(`http://100.89.97.87:8000/episodes/${id}`);
             const data = await response.json();
             
-            const items = data.results || data.episodes?.sub || data.episodes || data;
+            const providerKey = Object.keys(data.providers || {})[0];
+            const episodesObj = data.providers?.[providerKey]?.episodes || data.episodes;
+            const items = episodesObj?.sub || episodesObj || data.results || data;
             
             if (!Array.isArray(items)) return [];
 
-            // Map each item ensuring unique numbers and IDs are correctly assigned
             return items.map((ep: any, index: number) => {
-                const epNum = ep.number || index + 1;
+                const epNum = Number(ep.number) || index + 1;
                 return {
                     id: ep.id ? ep.id.toString() : `${id}-ep-${epNum}`,
                     number: epNum,
@@ -44,7 +44,7 @@ class Provider implements OnlineStreamProvider {
             console.log("Episodes error:", err);
             return [];
         }
-    }
+    }}
 
     async findEpisodeServer(episodeId: any): Promise<any> {
         try {
