@@ -1,6 +1,6 @@
 class Provider {
     // Define your API base URL (can also use user configuration variables)
-    private api = "http://your-server-ip:port"
+    private api = "http://100.89.97.87:8000"
 
     getSettings() {
         return {
