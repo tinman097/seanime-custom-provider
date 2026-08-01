@@ -29,19 +29,22 @@ class Provider {
     }
 
     async findEpisodes(animeId) {
-        const res = await fetch(`${this.api}/anime/${animeId}/episodes`);
-        if (!res.ok) return [];
+    const res = await fetch(`${this.api}/episodes/${animeId}`);
+    if (!res.ok) return [];
 
-        const data = await res.json();
-        const episodes = Array.isArray(data) ? data : (data.episodes || []);
+    const data = await res.json();
+    
+    // Automatically find the array whether your API returns a root array, 
+    // or wraps it inside an object (like data.episodes or data.results)
+    const episodes = Array.isArray(data) ? data : (data.episodes || data.results || data.data || []);
 
-        return episodes.map((ep, index) => ({
-            id: ep.id || `${animeId}-${index + 1}`,
-            number: ep.number || (index + 1),
-            title: ep.title || `Episode ${index + 1}`,
-            url: ep.url || ""
-        }));
-    }
+    return episodes.map((ep, index) => ({
+        id: ep.id ? ep.id.toString() : `${animeId}-${index + 1}`,
+        number: ep.number || ep.episode || (index + 1),
+        title: ep.title || ep.name || `Episode ${index + 1}`,
+        url: ep.url || ep.link || ""
+    }));
+}
 
     async findEpisodeServer(episodeId) {
         const res = await fetch(`${this.api}/episode/${episodeId}/sources`);
