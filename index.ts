@@ -7,14 +7,16 @@ class Provider {
         };
     }
 
-    // Text searches only
     async search(query) {
-        // Skip if query is just a numeric AniList ID
-        if (!isNaN(query)) {
+        // CRITICAL FIX: If Seanime passes an AniList ID (pure number), 
+        // return an empty array immediately instead of hammering the backend.
+        if (!query || /^\d+$/.test(query.toString())) {
             return [];
         }
 
         const res = await fetch(`${this.api}/search?query=${encodeURIComponent(query)}`);
+        if (!res.ok) return [];
+        
         const data = await res.json();
         const results = Array.isArray(data) ? data : (data.results || []);
 
@@ -26,9 +28,7 @@ class Provider {
         }));
     }
 
-    // Handle episode listing requested via anime ID
     async findEpisodes(animeId) {
-        // Query your API's specific endpoint for episodes using the ID/slug
         const res = await fetch(`${this.api}/anime/${animeId}/episodes`);
         if (!res.ok) return [];
 
