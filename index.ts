@@ -8,25 +8,32 @@ class Provider {
     }
 
     async search(query) {
-        // CRITICAL FIX: If Seanime passes an AniList ID (pure number), 
-        // return an empty array immediately instead of hammering the backend.
-        if (!query || /^\d+$/.test(query.toString())) {
-            return [];
-        }
-
-        const res = await fetch(`${this.api}/search?query=${encodeURIComponent(query)}`);
-        if (!res.ok) return [];
-        
-        const data = await res.json();
-        const results = Array.isArray(data) ? data : (data.results || []);
-
-        return results.map(item => ({
-            id: item.id.toString(),
-            title: item.title || item.name,
-            image: item.image || "",
-            url: item.url || ""
-        }));
+    // Safely extract the query string whether Seanime passes a string, number, or object
+    let queryString = "";
+    if (typeof query === "object" && query !== null) {
+        queryString = query.title || query.search || query.query || "";
+    } else {
+        queryString = String(query || "");
     }
+
+    // Ignore pure numeric AniList IDs
+    if (!queryString || /^\d+$/.test(queryString)) {
+        return [];
+    }
+
+    const res = await fetch(`${this.api}/search?query=${encodeURIComponent(queryString)}`);
+    if (!res.ok) return [];
+    
+    const data = await res.json();
+    const results = Array.isArray(data) ? data : (data.results || []);
+
+    return results.map(item => ({
+        id: item.id.toString(),
+        title: item.title || item.name,
+        image: item.image || "",
+        url: item.url || ""
+    }));
+}
 
     async findEpisodes(animeId) {
     const res = await fetch(`${this.api}/episodes/${animeId}`);
