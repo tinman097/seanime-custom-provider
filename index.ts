@@ -7,34 +7,36 @@ class Provider {
         };
     }
 
-    async search(query) {
-    // Safely extract the query string whether Seanime passes a string, number, or object
-    let queryString = "";
-    if (typeof query === "object" && query !== null) {
-        queryString = query.title || query.search || query.query || "";
-    } else {
-        queryString = String(query || "");
+   async search(query) {
+    let cleanQuery = "";
+
+    // Safely extract text from whatever format Seanime passes
+    if (typeof query === "string") {
+        cleanQuery = query;
+    } else if (typeof query === "number") {
+        cleanQuery = query.toString();
+    } else if (typeof query === "object" && query !== null) {
+        cleanQuery = query.title || query.searchQuery || query.query || JSON.stringify(query);
     }
 
-    // Ignore pure numeric AniList IDs
-    if (!queryString || /^\d+$/.test(queryString)) {
+    // If it somehow still resolved to an object reference string, abort
+    if (!cleanQuery || cleanQuery.includes("[object Object]") || /^\d+$/.test(cleanQuery)) {
         return [];
     }
 
-    const res = await fetch(`${this.api}/search?query=${encodeURIComponent(queryString)}`);
+    const res = await fetch(`${this.api}/search?query=${encodeURIComponent(cleanQuery)}`);
     if (!res.ok) return [];
     
     const data = await res.json();
     const results = Array.isArray(data) ? data : (data.results || []);
 
     return results.map(item => ({
-        id: item.id.toString(),
-        title: item.title || item.name,
+        id: item.id ? item.id.toString() : "",
+        title: item.title || item.name || "",
         image: item.image || "",
         url: item.url || ""
     }));
 }
-
     async findEpisodes(animeId) {
     const res = await fetch(`${this.api}/episodes/${animeId}`);
     if (!res.ok) return [];
