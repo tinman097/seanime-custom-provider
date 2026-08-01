@@ -7,26 +7,21 @@ class Provider {
         };
     }
 
-  async search(query) {
+ async search(query) {
         let cleanQuery = "";
 
         if (typeof query === "string") {
             cleanQuery = query;
         } else if (typeof query === "object" && query !== null) {
-            // Seanime passes the media object here; pull titles safely in order of preference
-            if (query.title) {
-                cleanQuery = typeof query.title === "string" ? query.title : (query.title.romaji || query.title.english || "");
-            }
-            if (!cleanQuery) {
-                cleanQuery = query.romaji || query.english || query.native || "";
-            }
+            // Grab ID or whatever identifier is present inside the media object wrapper
+            cleanQuery = query.id ? query.id.toString() : (query.romaji || query.english || "");
         }
 
-        if (!cleanQuery || cleanQuery.includes("[object Object]") || /^\d+$/.test(cleanQuery)) {
-            return [];
-        }
+        const targetUrl = (!cleanQuery || cleanQuery.includes("[object Object]"))
+            ? `${this.api}/search?query=__empty__`
+            : `${this.api}/search?query=${encodeURIComponent(cleanQuery)}`;
 
-        const res = await fetch(`${this.api}/search?query=${encodeURIComponent(cleanQuery)}`);
+        const res = await fetch(targetUrl);
         if (!res.ok) return [];
         
         const data = await res.json();
