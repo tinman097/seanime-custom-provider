@@ -1,5 +1,5 @@
 class Provider {
-    // Define your API base URL (can also use user configuration variables)
+    // Your Tailscale or local server address
     private api = "http://100.89.97.87:8000"
 
     getSettings() {
@@ -8,40 +8,54 @@ class Provider {
         }
     }
 
-    // Search anime by title
+    // Search anime by title or ID
     async search(query) {
-        const res = await fetch(`${this.api}/search?q=${encodeURIComponent(query)}`);
+        // If Seanime passes a numeric AniList ID as a query, handle it gracefully
+        let searchUrl = `${this.api}/search?query=${encodeURIComponent(query)}`;
+        
+        const res = await fetch(searchUrl);
         const data = await res.json();
         
-        // Return array matching Seanime's expected search format
-        return data.map(item => ({
-            id: item.id.toString(),
-            title: item.title,
-            image: item.image,
-            url: item.url
+        // Ensure data format matches what Seanime expects
+        // (Miruro-API typically returns a list of results)
+        const results = Array.isArray(data) ? data : (data.results || [data]);
+
+        return results.map(item => ({
+            id: item.id ? item.id.toString() : query,
+            title: item.title || item.name || query,
+            image: item.image || item.poster || "",
+            url: item.url || ""
         }));
     }
 
-    // Get episodes for a specific anime ID
+    // Get episodes for a specific anime
     async findEpisodes(animeId) {
+        // If the ID is a numeric AniList ID, we might need to search or query the specific endpoint format your API uses
         const res = await fetch(`${this.api}/anime/${animeId}/episodes`);
-        const data = await res.json();
+        
+        if (!res.ok) {
+            // Fallback: if direct ID lookup fails, try searching the ID first to get the correct slug/internal ID
+            return [];
+        }
 
-        return data.episodes.map(ep => ({
-            id: ep.id,
-            number: ep.number,
-            title: ep.title,
-            url: ep.url
+        const data = await res.json();
+        const episodes = Array.isArray(data) ? data : (data.episodes || []);
+
+        return episodes.map((ep, index) => ({
+            id: ep.id || `${animeId}-${index + 1}`,
+            number: ep.number || (index + 1),
+            title: ep.title || `Episode ${index + 1}`,
+            url: ep.url || ep.link || ""
         }));
     }
 
-    // Get the direct video stream links (M3U8) and subtitles for an episode
+    // Get the direct video stream links (M3U8) for an episode
     async findEpisodeServer(episodeId) {
         const res = await fetch(`${this.api}/episode/${episodeId}/sources`);
         const data = await res.json();
 
         return {
-            videoUrl: data.url, // M3U8 link returned by your API
+            videoUrl: data.url || data.streamUrl || "",
             headers: data.headers || {},
             subtitles: data.subtitles || []
         };
