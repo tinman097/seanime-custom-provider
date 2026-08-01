@@ -7,36 +7,33 @@ class Provider {
         };
     }
 
-   async search(query) {
-    let cleanQuery = "";
+  async search(query) {
+        let searchTerm = "";
 
-    // Safely extract text from whatever format Seanime passes
-    if (typeof query === "string") {
-        cleanQuery = query;
-    } else if (typeof query === "number") {
-        cleanQuery = query.toString();
-    } else if (typeof query === "object" && query !== null) {
-        cleanQuery = query.title || query.searchQuery || query.query || JSON.stringify(query);
+        if (typeof query === "string") {
+            searchTerm = query;
+        } else if (typeof query === "object" && query !== null) {
+            // Extract title fields natively provided by Seanime's media object wrapper
+            searchTerm = query.romaji || query.english || query.native || query.title || "";
+        }
+
+        if (!searchTerm || searchTerm.includes("[object Object]") || /^\d+$/.test(searchTerm)) {
+            return [];
+        }
+
+        const res = await fetch(`${this.api}/search?query=${encodeURIComponent(searchTerm)}`);
+        if (!res.ok) return [];
+        
+        const data = await res.json();
+        const results = Array.isArray(data) ? data : (data.results || []);
+
+        return results.map(item => ({
+            id: item.id ? item.id.toString() : "",
+            title: item.title || item.name || "",
+            image: item.image || "",
+            url: item.url || ""
+        }));
     }
-
-    // If it somehow still resolved to an object reference string, abort
-    if (!cleanQuery || cleanQuery.includes("[object Object]") || /^\d+$/.test(cleanQuery)) {
-        return [];
-    }
-
-    const res = await fetch(`${this.api}/search?query=${encodeURIComponent(cleanQuery)}`);
-    if (!res.ok) return [];
-    
-    const data = await res.json();
-    const results = Array.isArray(data) ? data : (data.results || []);
-
-    return results.map(item => ({
-        id: item.id ? item.id.toString() : "",
-        title: item.title || item.name || "",
-        image: item.image || "",
-        url: item.url || ""
-    }));
-}
     async findEpisodes(animeId) {
     const res = await fetch(`${this.api}/episodes/${animeId}`);
     if (!res.ok) return [];
