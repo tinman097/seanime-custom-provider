@@ -8,20 +8,25 @@ class Provider {
     }
 
   async search(query) {
-        let searchTerm = "";
+        let cleanQuery = "";
 
         if (typeof query === "string") {
-            searchTerm = query;
+            cleanQuery = query;
         } else if (typeof query === "object" && query !== null) {
-            // Extract title fields natively provided by Seanime's media object wrapper
-            searchTerm = query.romaji || query.english || query.native || query.title || "";
+            // Seanime passes the media object here; pull titles safely in order of preference
+            if (query.title) {
+                cleanQuery = typeof query.title === "string" ? query.title : (query.title.romaji || query.title.english || "");
+            }
+            if (!cleanQuery) {
+                cleanQuery = query.romaji || query.english || query.native || "";
+            }
         }
 
-        if (!searchTerm || searchTerm.includes("[object Object]") || /^\d+$/.test(searchTerm)) {
+        if (!cleanQuery || cleanQuery.includes("[object Object]") || /^\d+$/.test(cleanQuery)) {
             return [];
         }
 
-        const res = await fetch(`${this.api}/search?query=${encodeURIComponent(searchTerm)}`);
+        const res = await fetch(`${this.api}/search?query=${encodeURIComponent(cleanQuery)}`);
         if (!res.ok) return [];
         
         const data = await res.json();
@@ -34,23 +39,6 @@ class Provider {
             url: item.url || ""
         }));
     }
-    async findEpisodes(animeId) {
-    const res = await fetch(`${this.api}/episodes/${animeId}`);
-    if (!res.ok) return [];
-
-    const data = await res.json();
-    
-    // Automatically find the array whether your API returns a root array, 
-    // or wraps it inside an object (like data.episodes or data.results)
-    const episodes = Array.isArray(data) ? data : (data.episodes || data.results || data.data || []);
-
-    return episodes.map((ep, index) => ({
-        id: ep.id ? ep.id.toString() : `${animeId}-${index + 1}`,
-        number: ep.number || ep.episode || (index + 1),
-        title: ep.title || ep.name || `Episode ${index + 1}`,
-        url: ep.url || ep.link || ""
-    }));
-}
 
     async findEpisodeServer(episodeId) {
         const res = await fetch(`${this.api}/episode/${episodeId}/sources`);
