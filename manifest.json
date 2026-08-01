@@ -1,6 +1,6 @@
 {
   "id": "custom-stream-provider",
-  "name": "Custom Stream Provider",
+  "name": "godchair",
   "version": "1.0.0",
   "type": "onlinestream-provider",
   "language": "typescript",
