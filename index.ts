@@ -1,27 +1,20 @@
 function search(query: string) {
-    // Fetches from your Express endpoint
-    const response = Http.get(`http://localhost:3000/api/search?q=${encodeURIComponent(query)}`);
+    const response = Http.get(`http://100.89.97{encodeURIComponent(query)}`);
     const data = JSON.parse(response.body);
     return data.results; 
 }
 
 function findEpisodes(id: string) {
-    const response = Http.get(`http://localhost:3000/api/episodes/${id}`);
+    const response = Http.get(`http://100.89.97{id}`);
     const data = JSON.parse(response.body);
     return data.episodes;
 }
 
 function VideoSources(episodeId: string) {
-    const response = Http.get(`http://localhost:3000/api/watch/${episodeId}`);
+    const response = Http.get(`http://100.89.97{episodeId}`);
     const data = JSON.parse(response.body);
     return {
         videos: data.sources,
         subtitles: []
     };
 }
-
-registerProvider({
-    search,
-    findEpisodes,
-    VideoSources
-});
