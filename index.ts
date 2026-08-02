@@ -37,18 +37,12 @@ class Provider {
     }
 
     async findEpisodeServers(episodeId) {
-        // Log or handle whatever format Seanime passes (number, string, or object)
+        // Seanime passes the exact episode object from your /episodes/{id} list when clicked
         let epNum = "1";
-        if (typeof episodeId === "number" || typeof episodeId === "string") {
-            epNum = String(episodeId);
-        } else if (typeof episodeId === "object" && episodeId !== null) {
+        if (typeof episodeId === "object" && episodeId !== null) {
             epNum = String(episodeId.number || episodeId.id || "1");
-        }
-
-        // If the ID contains a hyphen (e.g. "197824-8"), extract the episode number part
-        if (epNum.includes("-")) {
-            const parts = epNum.split("-");
-            epNum = parts[parts.length - 1];
+        } else {
+            epNum = String(episodeId);
         }
 
         return [
@@ -64,17 +58,15 @@ class Provider {
     }
 
     async findVideoSources(serverId) {
-        // serverId.url holds the episode number/ID we passed above
         const epNum = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "1") : String(serverId);
         
+        // Fetch directly using the episode number requested
         const res = await fetch(`${this.api}/episode/197824-${epNum}/sources`);
-        
-        const videoLink = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
         
         return {
             sources: [
                 {
-                    url: videoLink,
+                    url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
                     isM3U8: false
                 }
             ],
