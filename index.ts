@@ -36,26 +36,29 @@ class Provider {
         }));
     }
 
-    // 1. Seanime asks for the list of available servers for the episode
     async findEpisodeServers(episodeId) {
-        const targetId = typeof episodeId === "object" && episodeId !== null ? (episodeId.id || episodeId.url || "") : episodeId;
+        let epId = "";
+        if (typeof episodeId === "string" || typeof episodeId === "number") {
+            epId = episodeId;
+        } else if (typeof episodeId === "object" && episodeId !== null) {
+            epId = episodeId.id || episodeId.url || "";
+        }
         
         return [
             {
                 name: "Godchair Server",
-                url: targetId // We pass the episode ID to the next function as the 'url'
+                url: epId
             }
         ];
     }
 
-    // (Fallback alias just in case your specific Seanime version looks for the singular name)
     async findEpisodeServer(episodeId) {
         return this.findEpisodeServers(episodeId);
     }
 
-    // 2. Seanime automatically calls this to get the actual video stream
     async findVideoSources(serverId) {
-        const res = await fetch(`${this.api}/episode/${serverId}/sources`);
+        const cleanId = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "") : serverId;
+        const res = await fetch(`${this.api}/episode/${cleanId}/sources`);
         
         if (!res.ok) {
             return {
@@ -74,7 +77,6 @@ class Provider {
             sources: [
                 {
                     url: videoLink,
-                    // Auto-detect if it's an HLS playlist or direct mp4 based on the extension
                     isM3U8: videoLink.includes(".m3u8")
                 }
             ],
