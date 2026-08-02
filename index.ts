@@ -7,18 +7,26 @@ class Provider {
         };
     }
 
-    async search(query) {
-        let cleanQuery = "";
-
-        if (typeof query === "string") {
-            cleanQuery = query;
-        } else if (typeof query === "object" && query !== null) {
-            cleanQuery = query.id ? query.id.toString() : (query.romaji || query.english || query.title || "");
-        }
-
-        if (!cleanQuery || cleanQuery.includes("[object Object]")) {
+async search(query) {
+        // If Seanime passes [object Object] or an invalid string, return empty immediately 
+        // so it falls through cleanly to findEpisodes using the AniList ID.
+        if (!query || typeof query !== "string" || query.includes("[object Object]")) {
             return [];
         }
+
+        const res = await fetch(`${this.api}/search?query=${encodeURIComponent(query)}`);
+        if (!res.ok) return [];
+        
+        const data = await res.json();
+        const results = Array.isArray(data) ? data : (data.results || data.data || []);
+
+        return results.map(item => ({
+            id: item.id ? item.id.toString() : "",
+            title: item.title ? (item.title.romaji || item.title.english || item.title) : (item.name || ""),
+            image: item.coverImage ? item.coverImage.large : (item.image || ""),
+            url: item.url || ""
+        }));
+    }
 
         const res = await fetch(`${this.api}/search?query=${encodeURIComponent(cleanQuery)}`);
         if (!res.ok) return [];
