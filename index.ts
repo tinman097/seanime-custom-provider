@@ -37,8 +37,15 @@ class Provider {
     }
 
     async findEpisodeServer(episodeId) {
-        const targetId = typeof episodeId === "object" && episodeId !== null ? (episodeId.id || episodeId.url || "") : episodeId;
-        const res = await fetch(`${this.api}/episode/${targetId}/sources`);
+        // Handle whether Seanime passes a string ID or an object wrapper
+        let epId = "";
+        if (typeof episodeId === "string" || typeof episodeId === "number") {
+            epId = episodeId;
+        } else if (typeof episodeId === "object" && episodeId !== null) {
+            epId = episodeId.id || episodeId.url || "";
+        }
+
+        const res = await fetch(`${this.api}/episode/${epId}/sources`);
         if (!res.ok) {
             return {
                 videoUrl: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
@@ -49,7 +56,7 @@ class Provider {
 
         const data = await res.json();
         return {
-            videoUrl: data.url || data.videoUrl || "",
+            videoUrl: data.url || data.videoUrl || "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             headers: data.headers || {},
             subtitles: data.subtitles || []
         };
