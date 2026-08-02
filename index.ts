@@ -5,7 +5,6 @@ class CustomStreamProvider {
     }
 
     async search(query) {
-        // Extract string safely if query is passed as an object
         let q = "";
         if (typeof query === "string") {
             q = query;
@@ -54,14 +53,18 @@ class CustomStreamProvider {
     async findVideoSources(serverId) {
         const epNum = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "1") : String(serverId);
         
-        return {
-            sources: [
-                {
-                    url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    isM3U8: false
-                }
-            ],
-            subtitles: []
-        };
+        const res = await fetch(`${this.api}/episode/197824-${epNum}/sources`);
+        if (!res.ok) {
+            return {
+                sources: [
+                    {
+                        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                        isM3U8: false
+                    }
+                ],
+                subtitles: []
+            };
+        }
+        return await res.json();
     }
 }
