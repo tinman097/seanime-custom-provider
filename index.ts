@@ -36,29 +36,48 @@ class Provider {
         }));
     }
 
-    async findEpisodeServer(episodeId) {
-        // Handle whether Seanime passes a string ID or an object wrapper
-        let epId = "";
-        if (typeof episodeId === "string" || typeof episodeId === "number") {
-            epId = episodeId;
-        } else if (typeof episodeId === "object" && episodeId !== null) {
-            epId = episodeId.id || episodeId.url || "";
-        }
+    // 1. Seanime asks for the list of available servers for the episode
+    async findEpisodeServers(episodeId) {
+        const targetId = typeof episodeId === "object" && episodeId !== null ? (episodeId.id || episodeId.url || "") : episodeId;
+        
+        return [
+            {
+                name: "Godchair Server",
+                url: targetId // We pass the episode ID to the next function as the 'url'
+            }
+        ];
+    }
 
-        const res = await fetch(`${this.api}/episode/${epId}/sources`);
+    // (Fallback alias just in case your specific Seanime version looks for the singular name)
+    async findEpisodeServer(episodeId) {
+        return this.findEpisodeServers(episodeId);
+    }
+
+    // 2. Seanime automatically calls this to get the actual video stream
+    async findVideoSources(serverId) {
+        const res = await fetch(`${this.api}/episode/${serverId}/sources`);
+        
         if (!res.ok) {
             return {
-                videoUrl: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                headers: {},
+                sources: [{ 
+                    url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", 
+                    isM3U8: false 
+                }],
                 subtitles: []
             };
         }
 
         const data = await res.json();
+        const videoLink = data.url || data.videoUrl || "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+
         return {
-            videoUrl: data.url || data.videoUrl || "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            headers: data.headers || {},
+            sources: [
+                {
+                    url: videoLink,
+                    // Auto-detect if it's an HLS playlist or direct mp4 based on the extension
+                    isM3U8: videoLink.includes(".m3u8")
+                }
+            ],
             subtitles: data.subtitles || []
         };
     }
-}
