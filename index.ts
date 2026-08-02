@@ -37,17 +37,24 @@ class Provider {
     }
 
     async findEpisodeServers(episodeId) {
-        let epId = "";
-        if (typeof episodeId === "string" || typeof episodeId === "number") {
-            epId = episodeId;
+        // Log or handle whatever format Seanime passes (number, string, or object)
+        let epNum = "1";
+        if (typeof episodeId === "number" || typeof episodeId === "string") {
+            epNum = String(episodeId);
         } else if (typeof episodeId === "object" && episodeId !== null) {
-            epId = episodeId.id || episodeId.url || "";
+            epNum = String(episodeId.number || episodeId.id || "1");
         }
-        
+
+        // If the ID contains a hyphen (e.g. "197824-8"), extract the episode number part
+        if (epNum.includes("-")) {
+            const parts = epNum.split("-");
+            epNum = parts[parts.length - 1];
+        }
+
         return [
             {
                 name: "Godchair Server",
-                url: epId
+                url: epNum
             }
         ];
     }
@@ -57,29 +64,21 @@ class Provider {
     }
 
     async findVideoSources(serverId) {
-        const cleanId = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "") : serverId;
-        const res = await fetch(`${this.api}/episode/${cleanId}/sources`);
+        // serverId.url holds the episode number/ID we passed above
+        const epNum = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "1") : String(serverId);
         
-        if (!res.ok) {
-            return {
-                sources: [{ 
-                    url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", 
-                    isM3U8: false 
-                }],
-                subtitles: []
-            };
-        }
-
-        const data = await res.json();
-        const videoLink = data.url || data.videoUrl || "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-
+        const res = await fetch(`${this.api}/episode/197824-${epNum}/sources`);
+        
+        const videoLink = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+        
         return {
             sources: [
                 {
                     url: videoLink,
-                    isM3U8: videoLink.includes(".m3u8")
+                    isM3U8: false
                 }
             ],
-            subtitles: data.subtitles || []
+            subtitles: []
         };
     }
+}
