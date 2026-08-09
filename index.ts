@@ -1,4 +1,4 @@
-var PROVIDER = new class {
+class Provider {
     constructor() {
         this.name = "Godchair Custom Provider";
         this.api = "http://100.89.97.87:8000";
@@ -73,4 +73,4 @@ var PROVIDER = new class {
     async getSettings() {
         return {};
     }
-}();
+}
