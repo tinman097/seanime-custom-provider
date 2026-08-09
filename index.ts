@@ -1,4 +1,4 @@
-class Provider {
+var PROVIDER = new class {
     constructor() {
         this.name = "Godchair Custom Provider";
         this.api = "http://100.89.97.87:8000";
@@ -20,11 +20,11 @@ class Provider {
     }
 
     async findEpisodes(animeId) {
-        let id = "";
+        let id = "146850";
         if (typeof animeId === "object" && animeId !== null) {
-            id = animeId.id || animeId.mediaId || animeId.url || "132474";
-        } else {
-            id = String(animeId);
+            id = animeId.id || animeId.mediaId || animeId.url || "146850";
+        } else if (typeof animeId === "string" && animeId.trim() !== "") {
+            id = animeId.includes(" ") ? "146850" : animeId;
         }
 
         const res = await fetch(`${this.api}/episodes/${id}`);
@@ -33,11 +33,11 @@ class Provider {
     }
 
     async findEpisodeServers(episodeId) {
-        let epId = "";
-        if (typeof episodeId === "number" || typeof episodeId === "string") {
-            epId = String(episodeId);
-        } else if (typeof episodeId === "object" && episodeId !== null) {
+        let epId = "1";
+        if (typeof episodeId === "object" && episodeId !== null) {
             epId = String(episodeId.id || episodeId.number || episodeId.url || "1");
+        } else if (episodeId !== undefined && episodeId !== null) {
+            epId = String(episodeId);
         }
 
         return [
@@ -69,9 +69,8 @@ class Provider {
         }
         return await res.json();
     }
-}
 
-// Export the instance as `PROVIDER` or let Seanime instantiate `Provider`
-if (typeof module !== 'undefined') {
-    module.exports = Provider;
-}
+    async getSettings() {
+        return {};
+    }
+}();
