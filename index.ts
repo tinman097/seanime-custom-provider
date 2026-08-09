@@ -20,7 +20,14 @@ class CustomStreamProvider {
     }
 
     async findEpisodes(animeId) {
-        const res = await fetch(`${this.api}/episodes/${animeId}`);
+        let id = "";
+        if (typeof animeId === "object" && animeId !== null) {
+            id = animeId.id || animeId.mediaId || animeId.url || "146850";
+        } else {
+            id = String(animeId);
+        }
+
+        const res = await fetch(`${this.api}/episodes/${id}`);
         if (!res.ok) return [];
         return await res.json();
     }
@@ -30,7 +37,7 @@ class CustomStreamProvider {
         if (typeof episodeId === "number" || typeof episodeId === "string") {
             epId = String(episodeId);
         } else if (typeof episodeId === "object" && episodeId !== null) {
-            epId = String(episodeId.id || episodeId.url || "1");
+            epId = String(episodeId.id || episodeId.number || episodeId.url || "1");
         }
 
         return [
@@ -48,7 +55,6 @@ class CustomStreamProvider {
     async findVideoSources(serverId) {
         const epId = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "1") : String(serverId);
         
-        // This now uses the full episode ID (e.g. animeId-epNumber) directly from your /episodes/ route
         const res = await fetch(`${this.api}/episode/${epId}/sources`);
         if (!res.ok) {
             return {
