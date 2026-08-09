@@ -1,4 +1,4 @@
-class CustomStreamProvider {
+var PROVIDER = new class {
     constructor() {
         this.name = "Godchair Custom Provider";
         this.api = "http://100.89.97.87:8000";
@@ -69,9 +69,4 @@ class CustomStreamProvider {
         }
         return await res.json();
     }
-}
-
-// Prevent re-declaration errors on hot reloads and satisfy Seanime's loader
-if (typeof PROVIDER === 'undefined') {
-    var PROVIDER = new CustomStreamProvider();
-}
+}();
