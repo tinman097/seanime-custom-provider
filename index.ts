@@ -26,22 +26,17 @@ class CustomStreamProvider {
     }
 
     async findEpisodeServers(episodeId) {
-        let epNum = "1";
+        let epId = "";
         if (typeof episodeId === "number" || typeof episodeId === "string") {
-            epNum = String(episodeId);
+            epId = String(episodeId);
         } else if (typeof episodeId === "object" && episodeId !== null) {
-            epNum = String(episodeId.number || episodeId.id || "1");
-        }
-
-        if (epNum.includes("-")) {
-            const parts = epNum.split("-");
-            epNum = parts[parts.length - 1];
+            epId = String(episodeId.id || episodeId.url || "1");
         }
 
         return [
             {
                 name: "Godchair Server",
-                url: epNum
+                url: epId
             }
         ];
     }
@@ -51,9 +46,10 @@ class CustomStreamProvider {
     }
 
     async findVideoSources(serverId) {
-        const epNum = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "1") : String(serverId);
+        const epId = typeof serverId === "object" && serverId !== null ? (serverId.url || serverId.id || "1") : String(serverId);
         
-        const res = await fetch(`${this.api}/episode/197824-${epNum}/sources`);
+        // This now uses the full episode ID (e.g. animeId-epNumber) directly from your /episodes/ route
+        const res = await fetch(`${this.api}/episode/${epId}/sources`);
         if (!res.ok) {
             return {
                 sources: [
