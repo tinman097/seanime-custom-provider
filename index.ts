@@ -1,4 +1,4 @@
-var PROVIDER = new class {
+class Provider {
     constructor() {
         this.name = "Godchair Custom Provider";
         this.api = "http://100.89.97.87:8000";
@@ -22,7 +22,7 @@ var PROVIDER = new class {
     async findEpisodes(animeId) {
         let id = "";
         if (typeof animeId === "object" && animeId !== null) {
-            id = animeId.id || animeId.mediaId || animeId.url || "146850";
+            id = animeId.id || animeId.mediaId || animeId.url || "132474";
         } else {
             id = String(animeId);
         }
@@ -69,4 +69,9 @@ var PROVIDER = new class {
         }
         return await res.json();
     }
-}();
+}
+
+// Export the instance as `PROVIDER` or let Seanime instantiate `Provider`
+if (typeof module !== 'undefined') {
+    module.exports = Provider;
+}
